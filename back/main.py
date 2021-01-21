@@ -59,6 +59,10 @@ async def get_category_full_info(session, category):
     await asyncio.sleep(1)
     return JSONbuilder.create(category_info, availabilities)
 
+@app.get("/")
+def read_root():
+    return "You should not be here"
+
 @app.get("/root")
 def read_root():
     return "Select a product category for up-to-date inventory info. Please note that first-time loads might take a long time."

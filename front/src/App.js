@@ -1,11 +1,14 @@
-import React, { useState, forwardRef } from 'react'
+import React, { useState, forwardRef, useEffect } from 'react'
 import { Button, Progress, Flex, ButtonGroup, Heading, Spacer, Box, Circle } from "@chakra-ui/react"
 import { ArrowDownward, ChevronLeft, ChevronRight, Clear, FirstPage, LastPage, Search } from "@material-ui/icons";
 import MaterialTable from '@material-table/core'
 import axios from 'axios'
 import useSWR from 'swr'
 
-const dataError = "Error fetching data. Try reloading the page or contact support if the problem persist"
+const dataError = "Error fetching data. Try reloading the page or contact support if the problem persist."
+
+const waitTime = 90
+var serverTime = waitTime
 
 const columns = [
   {
@@ -73,31 +76,66 @@ const GetData = (category) => {
 const Category = ({ id }) => {
   const { data, isLoading, isError } = GetData(id)
   if (isLoading) return <Progress size="xs" isIndeterminate />
-  if (isError) return dataError
   if (Array.isArray(data)) {
     return (
       <MaterialTable icons={tableIcons} key={id} title={id.toUpperCase()} columns={columns} data={data} />
     )
+  }
+  if ((isError)) {
+    return dataError
   } else {
+    if (!isNaN(data)) {
+      serverTime = waitTime - parseInt(data)
+    } else {
+      serverTime = 0
+    }
     return data
   }
 }
 
 const App = () => {
 
-  const [category, setCategory] = useState("root")
+  const [category, setCategory] = useState("root/gloves")
+  const [counter, setCounter] = useState(0);
+  const [serverPinged, setServerPinged] = useState(false)
+
+  const buttonsDisabled = () => {
+    if (serverTime - counter > 0) {
+      return true
+    }
+    return false
+  }
+
+  const Content = () => {
+    if (!serverPinged) {
+      Category({ id: category })
+    }
+    if (serverTime - counter > 0) {
+      return "Server is waking up, please wait up to " + (serverTime - counter) + " seconds!"
+    }
+    return (<Category key={category} id={category} />)
+  }
+
+  useEffect(() => {
+    serverTime - counter > 0 && setTimeout(() => setCounter(counter + 1), 1000);
+  }, [counter])
+
+  useEffect(() => {
+    setTimeout(() => setServerPinged(true), 3000)
+    setServerPinged(false)
+  }, [counter])
 
   return (
     <div className="App">
       <Flex direction="row" padding="2rem" bg="teal.500">
         <ButtonGroup variant="solid" size="lg" spacing={5}>
-          <Button colorScheme="teal" onClick={() => setCategory("beanies")} >
+          <Button colorScheme="teal" loadingText="Beanies" isLoading={buttonsDisabled()} onClick={() => setCategory("beanies")} >
             Beanies
           </Button>{' '}
-          <Button colorScheme="teal" onClick={() => setCategory("gloves")} >
+          <Button colorScheme="teal" loadingText="Gloves" isLoading={buttonsDisabled()} onClick={() => setCategory("gloves")} >
             Gloves
           </Button>{' '}
-          <Button colorScheme="teal" onClick={() => setCategory("facemasks")} >
+          <Button colorScheme="teal" loadingText="Facemasks" isLoading={buttonsDisabled()} onClick={() => setCategory("facemasks")} >
             Facemasks
           </Button>{' '}
         </ButtonGroup>
@@ -106,7 +144,7 @@ const App = () => {
         <Spacer />
       </Flex>
       <Flex direction="column" padding="1rem" bg="gray.100">
-        <Category key={category} id={category} />
+        <Content />
       </Flex>
     </div >
   )

@@ -1,9 +1,10 @@
 import json
-import lxml
-import time
-import re
-from bs4 import BeautifulSoup
 
+availability_values = {
+    "<AVAILABILITY>\n  <CODE>200</CODE>\n  <INSTOCKVALUE>INSTOCK</INSTOCKVALUE>\n</AVAILABILITY>": ["In stock","green"],
+    "<AVAILABILITY>\n  <CODE>200</CODE>\n  <INSTOCKVALUE>OUTOFSTOCK</INSTOCKVALUE>\n</AVAILABILITY>": ["Out of stock","red"],
+    "<AVAILABILITY>\n  <CODE>200</CODE>\n  <INSTOCKVALUE>LESSTHAN10</INSTOCKVALUE>\n</AVAILABILITY>": ["Less than 10","yellow"]
+}
 
 def create(category, availabilities):
     available_dict = {}
@@ -11,13 +12,7 @@ def create(category, availabilities):
     for i in availabilities:
         for j in i['response']:
             id = str(j['id']).lower()
-            available = BeautifulSoup(j['DATAPAYLOAD'], 'lxml').find('instockvalue').string
-            if available == 'OUTOFSTOCK':
-                available_dict[id] = ["Out of stock", "red"]
-            elif available != 'INSTOCK':
-                available_dict[id] = ["Less than 10", "yellow"]
-            else:
-                available_dict[id] = ["In stock", "green"]
+            available_dict[id] = availability_values[j['DATAPAYLOAD']]
     for product in category:
         name = product['name']
         id = str(product['id']).lower()

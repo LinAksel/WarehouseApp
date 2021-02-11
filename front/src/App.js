@@ -95,35 +95,34 @@ const Category = ({ id }) => {
 
 const App = () => {
 
-  const [category, setCategory] = useState("root/gloves")
-  const [counter, setCounter] = useState(0);
-  const [serverPinged, setServerPinged] = useState(false)
+  const [category, setCategory] = useState("root/beanies")
+  const [counter, setCounter] = useState(waitTime);
+  const [serverPinged, setServerPinged] = useState(waitTime)
 
   const buttonsDisabled = () => {
-    if (serverTime - counter > 0) {
+    if (serverTime !== 0) {
       return true
     }
     return false
   }
 
   const Content = () => {
-    if (!serverPinged) {
+    if (serverPinged % 3 === 0) {
       Category({ id: category })
     }
-    if (serverTime - counter > 0) {
-      return "Server is waking up, please wait up to " + (serverTime - counter) + " seconds!"
+    if (serverTime !== 0) {
+      return "Server is waking up, please wait up to " + (counter) + " seconds!"
     }
     return (<Category key={category} id={category} />)
   }
 
   useEffect(() => {
-    serverTime - counter > 0 && setTimeout(() => setCounter(counter + 1), 1000);
+    counter > 0 && setTimeout(() => setCounter(Math.min(counter - 1, Math.max(serverTime, 0))), 1000);
   }, [counter])
 
   useEffect(() => {
-    setTimeout(() => setServerPinged(true), 3000)
-    setServerPinged(false)
-  }, [counter])
+    serverTime !== 0 && setTimeout(() => setServerPinged(serverPinged - 1), 4000);
+  }, [serverPinged])
 
   return (
     <div className="App">

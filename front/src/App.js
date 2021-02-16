@@ -97,7 +97,7 @@ const App = () => {
 
   const [category, setCategory] = useState("root/beanies")
   const [counter, setCounter] = useState(waitTime);
-  const [serverPinged, setServerPinged] = useState(waitTime)
+  const [serverPinged, setServerPinged] = useState(false)
 
   const buttonsDisabled = () => {
     if (serverTime !== 0) {
@@ -107,7 +107,7 @@ const App = () => {
   }
 
   const Content = () => {
-    if (serverPinged % 3 === 0) {
+    if (!serverPinged) {
       Category({ id: category })
     }
     if (serverTime !== 0) {
@@ -121,7 +121,7 @@ const App = () => {
   }, [counter])
 
   useEffect(() => {
-    serverTime !== 0 && setTimeout(() => setServerPinged(serverPinged - 1), 4000);
+    serverTime !== 0 && setTimeout(() => setServerPinged(!serverPinged), 4000);
   }, [serverPinged])
 
   return (
